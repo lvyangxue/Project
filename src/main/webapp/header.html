@@ -1,0 +1,125 @@
+<!-- 头部 start -->
+<head>
+    <meta charset="UTF-8">
+    <script src="js/getParameter.js"></script>
+</head>
+<script>
+    //定义入口函数
+    $(function () {
+        //发送一个异步请求,显示用户是否登录
+        $.post("/travel/user/findUser",{},function (data) {
+            if(data!=null)
+            //data 为用户对象的json字符串格式  {username:".." name:".."...}
+            var msg="欢迎回来"+data.username
+            $("#span_username").html(msg);
+        })
+        //发送一个异步请求，判断是否有自动登录
+        $.post("/travel/user/autoLogin",{},function (data) {
+            if(data!=null){
+                //用户设置了自动登录
+                var msg="欢迎回来"+data.username;
+                $("#span_username").html(msg);
+            }
+            //为null代表没有设置自动登录不做任何处理
+        })
+
+       //进行异步请求获取首页类别导航
+        $.post("/travel/category/getAllCategory",{},function (data) {
+            //在首页首页进行高亮显示
+            if(location.href=="http://localhost/travel/index.html"||location.href=="http://localhost/travel/"){
+                var lis='<li class="nav-active" id="index"><a href="index.html">首页</a></li>';
+            }else {
+                var lis='<li id="index"><a href="index.html">首页</a></li>';
+            }
+            //回调函数为数据库中所有category对象的json数组格式
+            for(var i=0;i<data.length;i++){
+                //获取地址栏(即访问栏)中的cid，若与当前分类的cid相同进行高亮显示
+                if(getParameter("cid")==data[i].cid){
+                    var li="<li class='nav-active'><a href='route_list.html?cid="+data[i].cid+"'>"+data[i].cname+"</a>"
+                }else {
+                    var li="<li><a href='route_list.html?cid="+data[i].cid+"'>"+data[i].cname+"</a>"
+                }
+                //进行字符串拼接
+                lis+=li
+            }
+            //最后拼接收藏排行榜
+            if(location.href=="http://localhost/travel/favoriterank.html"){
+                lis+='<li class="nav-active"><a href="favoriterank.html">收藏排行榜</a></li>'
+            }else {
+                lis+='<li><a href="favoriterank.html">收藏排行榜</a></li>'
+            }
+
+            $(lis).appendTo($("#category"))
+        })
+        //搜索后搜索框要存有搜索的内容,没有搜索内容保持默认 请输入搜索路线
+        var rname=getParameter("rname");
+        if(rname){
+            //进行url解码
+            rname=window.decodeURIComponent(rname)
+            $("#search_input").val(rname);
+        }
+    })
+    function logout() {
+        //点击退出发送一个异步请求到logOutServlet
+        $.post("/travel/user/logOut",{},function () {
+                //将页面跳转至登录界面
+            location.href="/travel/login.html";
+        })
+    }
+
+    //点击搜索执行函数
+    function search() {
+        //获取搜索内容
+        var rname=$("#search_input").val();
+        //获取当前地址栏的cid
+        var cid = getParameter("cid")
+        //跳转到搜索界面
+        location.href="http://localhost/travel/route_list.html?cid="+cid+"&rname="+rname;
+    }
+</script>
+    <header id="header">
+        <div class="top_banner">
+            <img src="images/top_banner.jpg" alt="">
+        </div>
+        <div class="shortcut">
+            <!-- 未登录状态  -->
+            <div class="login_out">
+                <a href="/travel/login.html">登录</a>
+                <a href="/travel/register.html">注册</a>
+            </div>
+            <!-- 登录状态  -->
+            <div class="login">
+                <span id="span_username"></span>
+                <a href="myfavorite.html" class="collection">我的收藏</a>
+                <a href="javascript:logout();">退出</a>
+            </div>
+        </div>
+        <div class="header_wrap">
+            <div class="topbar">
+                <div class="logo">
+                    <a href="/"><img src="images/logo.jpg" alt=""></a>
+                </div>
+                <div class="search">
+                    <input name="" type="text" id='search_input' placeholder="请输入路线名称" class="search_input" autocomplete="off">
+                    <a href="javascript:search()" id="search_button" class="search-button">搜索</a>
+                </div>
+                <div class="hottel">
+                    <div class="hot_pic">
+                        <img src="images/hot_tel.jpg" alt="">
+                    </div>
+                    <div class="hot_tel">
+                        <p class="hot_time">客服热线(9:00-6:00)</p>
+                        <p class="hot_num">400-618-9090</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+    <!-- 头部 end -->
+     <!-- 首页导航 -->
+    <div class="navitem">
+        <ul class="nav" id="category">
+
+        </ul>
+    </div>
+    

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>收藏排行榜</title>
+        <link rel="stylesheet" type="text/css" href="css/common.css">
+        <link rel="stylesheet" type="text/css" href="css/ranking-list.css">
+        <script src="js/jquery-3.3.1.js"></script>
+        <script src="js/getParameter.js"></script>
+    </head>
+    <script>
+        //定义入口函数
+        $(function () {
+            //获取地址栏中发送的数据
+            var rankname=getParameter("rankname");
+            var minMoney=getParameter("minMoney");
+            var maxMoney=getParameter("maxMoney");
+            //如果rname不为null和”“对rname进行一个解码
+            if(rankname){
+                //url解码
+                rankname=window.decodeURIComponent(rankname)
+                //在搜索后输入框为用户输入的信息
+                $("#rankname").val(rankname)
+            } else {
+                rankname=null;
+            }
+            if(minMoney){
+                //在搜索后输入框为用户输入的信息
+                $("#minMoney").val(minMoney)
+            }else {
+                minMoney=null
+            }
+            if(maxMoney){
+                //在搜索后输入框为用户输入的信息
+                $("#maxMoney").val(maxMoney)
+            }else {
+                maxMoney=null
+            }
+            //作为参数传入load函数
+            load(rankname,minMoney,maxMoney)
+            //执行load函数获取排行榜信息
+        })
+
+        //定义load函数 根据条件获取排行耪信息
+        function load(rankname,minMoney,maxMoney,currentPage,rows) {
+            //进行异步请求
+            $.get("/travel/favorite/favoriteRank",{"rankname":rankname,"minMoney":minMoney,"maxMoney":maxMoney,"currentPage":currentPage,"rows":rows}, function (pagebean) {
+                        //pagebean封装了总页数，总数据量，当前页展示信息
+                var li=""
+                var route=""
+                for (var i = 0; i < pagebean.list.length; i++) {
+                    if(i==0){
+                        route='<li>\n' +
+                            '                        <span class="num one">'+(i+1)+'</span>\n' +
+                            '                        <a href="route_detail.html?rid='+pagebean.list[i].rid+'"><img src=" '+pagebean.list[i].rimage+' " alt=""></a>\n' +
+                            '                        <h4><a href="route_detail.html?rid='+pagebean.list[i].rid+'">'+pagebean.list[i].rname+'</a></h4>\n' +
+                            '                        <p>\n' +
+                            '                            <b class="price">&yen;<span>'+pagebean.list[i].price+'</span>起</b>\n' +
+                            '                            <span class="shouchang">'+pagebean.list[i].count+'</span>\n' +
+                            '                        </p>\n' +
+                            '                    </li>'
+                        li+=route;
+                    } else if(i==1){
+                        route='<li>\n' +
+                            '                        <span class="num two">'+(i+1)+'</span>\n' +
+                            '                        <a href="route_detail.html?rid='+pagebean.list[i].rid+'"><img src=" '+pagebean.list[i].rimage+' " alt=""></a>\n' +
+                            '                        <h4><a href="route_detail.html?rid='+pagebean.list[i].rid+'">'+pagebean.list[i].rname+'</a></h4>\n' +
+                            '                        <p>\n' +
+                            '                            <b class="price">&yen;<span>'+pagebean.list[i].price+'</span>起</b>\n' +
+                            '                            <span class="shouchang">'+pagebean.list[i].count+'</span>\n' +
+                            '                        </p>\n' +
+                            '                    </li>'
+                        li+=route;
+                    }else {
+                        route='<li>\n' +
+                            '                        <span class="num">'+(i+1)+'</span>\n' +
+                            '                        <a href="route_detail.html?rid='+pagebean.list[i].rid+'"><img src=" '+pagebean.list[i].rimage+' " alt=""></a>\n' +
+                            '                        <h4><a href="route_detail.html?rid='+pagebean.list[i].rid+'">'+pagebean.list[i].rname+'</a></h4>\n' +
+                            '                        <p>\n' +
+                            '                            <b class="price">&yen;<span>'+pagebean.list[i].price+'</span>起</b>\n' +
+                            '                            <span class="shouchang">'+pagebean.list[i].count+'</span>\n' +
+                            '                        </p>\n' +
+                            '                    </li>'
+                        li+=route;
+                    }
+
+                }
+                $("#rank_msg").html(li)
+                //分页显示
+                //对数据进行分页展示
+                var allpage="";
+                var firstPage='<li><a href="javascript:load('+"'"+rankname+"'"+','+minMoney+','+maxMoney+','+1+')">首页</a></li>'
+                //对当前页做一个判断，限制上一页功能
+                var previousPage="";
+                if(pagebean.currentPage==1){
+                    //当前页已经是第一页点击上一页展示的仍然为第一页
+                    previousPage='<li class="threeword"><a href="javascript:load('+"'"+rankname+"'"+','+minMoney+','+maxMoney+','+1+')">上一页</a></li>'
+                }else {
+                    //当前页不是第一个可以正常后退一页
+                    previousPage='<li class="threeword"><a href="javascript:load('+"'"+rankname+"'"+','+minMoney+','+maxMoney+','+(pagebean.currentPage-1)+')">上一页</a></li>'
+                }
+                allpage=firstPage+previousPage;
+
+                var begin;
+                var end;
+                if(pagebean.totalPage<10){
+                    //总页码不够10页
+                    begin=1;
+                    end=pagebean.totalPage
+                }else{
+                    begin=pagebean.currentPage-5;
+                    end=pagebean.currentPage+4;
+                    //前面不够5个
+                    if(begin<1){
+                        begin=1;
+                        end=begin+9;
+                    }
+                    //后面不足4个
+                    if(end>pagebean.totalPage){
+                        end=pagebean.totalPage;
+                        begin=end-9;
+                    }
+                }
+                for (var i = begin; i <= end; i++) {
+                    var page
+                    if(pagebean.currentPage==i){
+                        //判断是否为当前页
+                        //循环展示总共数据多少页，并为每页绑定currentPage
+                        page='<li class="curPage"><a href="javascript:load('+"'"+rankname+"'"+','+minMoney+','+maxMoney+','+i+')">'+i+'</a></li>'
+                    }else {
+                        //循环展示总共数据多少页，并为每页绑定currentPage
+                        page='<li><a href="javascript:load('+"'"+rankname+"'"+','+minMoney+','+maxMoney+','+i+')">'+i+'</a></li>'
+                    }
+                    allpage+=page;
+                }
+
+                //拼接下一页
+                var nextPage=""
+                //对当前页进行判断，对下一页进行限制
+                if(pagebean.currentPage==pagebean.totalPage){
+                    //已经是最后一页再点击也只显示最后一页内容
+                    nextPage='<li class="threeword"><a href="javascript:load('+"'"+rankname+"'"+','+minMoney+','+maxMoney+','+pagebean.totalPage+')">下一页</a></li>'
+                }else {
+                    //不是最后一页功能正常
+                    nextPage='<li class="threeword"><a href="javascript:load('+"'"+rankname+"'"+','+minMoney+','+maxMoney+','+(pagebean.currentPage+1)+')">下一页</a></li>'
+                }
+                allpage+=nextPage;
+
+                //拼接最后一页
+                var lastPage='<li class="threeword"><a href="javascript:load('+"'"+rankname+"'"+','+minMoney+','+maxMoney+','+pagebean.totalPage+')">末页</a></li>'
+                allpage+=lastPage;
+
+                $("#page").html(allpage);
+                //定位到页面顶部
+                window.scrollTo(0,0);
+                })
+        }
+        //为搜索框绑定一个search函数
+        function rankSearch() {
+            //获取用书输入的线路名称
+            var rankname=$("#rankname").val();
+            var minMoney=$("#minMoney").val();
+            var maxMoney=$("#maxMoney").val();
+            //进行搜索指定条件
+            location.href="http://localhost/travel/favoriterank.html?rankname="+rankname+"&minMoney="+minMoney+"&maxMoney="+maxMoney;
+        }
+    </script>
+    <body>
+    <!--引入头部-->
+    <div id="header"></div>
+        <div class="contant">
+            <div class="shaixuan">
+                <span >线路名称</span>
+                <input type="text" id="rankname">
+                <span>金额</span>
+                <input type="text" id="minMoney">~<input type="text" id="maxMoney">
+                <button type="button" onclick="rankSearch()">搜索</button>
+            </div>
+            <div class="list clearfix">
+                <ul id="rank_msg">
+<!--                    排行榜信息展示-->
+<!--                    <li>-->
+<!--                        <span class="num one">1</span>-->
+<!--                        <a href="route_detail.html"><img src="images/jiangxuan_4.jpg" alt=""></a>-->
+<!--                        <h4><a href="route_detail.html">【尾单特卖】全国-曼谷6-7天自由行 泰国出境旅游 特价往6-7天自由行 泰国出境旅游 特价往..</a></h4>-->
+<!--                        <p>-->
+<!--                            <b class="price">&yen;<span>899</span>起</b>-->
+<!--                            <span class="shouchang">已收藏450次</span>-->
+<!--                        </p>-->
+<!--                    </li>-->
+                </ul>
+            </div>
+            <div class="pageNum">
+                <ul id="page">
+<!--                    <li><a href="">首页</a></li>-->
+<!--                    <li class="threeword"><a href="#">上一页</a></li>-->
+<!--                    <li><a href="#">1</a></li>-->
+<!--                    <li class="threeword"><a href="javascript:;">下一页</a></li>-->
+<!--                    <li class="threeword"><a href="javascript:;">末页</a></li>-->
+                </ul>
+            </div>
+        </div>
+    	
+         <!--导入底部-->
+   		 <div id="footer"></div>
+    <!--导入布局js，共享header和footer-->
+    <script type="text/javascript" src="js/include.js"></script>
+    </body>
+</html>

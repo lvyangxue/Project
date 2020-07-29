@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>注册</title>
+        <link rel="stylesheet" type="text/css" href="css/common.css">
+        <link rel="stylesheet" href="css/register.css">
+		<!--导入jquery-->
+		<script src="js/jquery-3.3.1.js"></script>
+    </head>
+	<script>
+
+		$(function () {
+			//用户名格式判断方法
+			function checkusername() {
+				//用户名要求正则表达式
+				var usernameReg=/^\w{8,20}$/;
+				//获取输入的用户名进行验证
+				var username = $("#username").val();
+				if(usernameReg.test(username)){
+					//符合用户名规范
+					$("#username").css("border","");
+					$("#usernamemsg").html("")
+					return true;
+				}
+				//不符合正则表达式,对用户进行提示,阻止表单提交 并设置该输入框边框为红色
+				$("#username").css("border","1px solid red");
+				$("#usernamemsg").html("用户名格式错误")
+				return false;
+			}
+			//密码格式判断方法
+			function checkpassword() {
+				//密码正则表达式
+				var passwordReg=/^\w{8,20}$/;
+				//获取输入的密码进行验证
+				var password = $("#password").val();
+				if(passwordReg.test(password)){
+					//密码符合正则要求直接返回true
+					$("#password").css("border","");
+					//将错误提示去除
+					$("#passwordmsg").html("")
+					return true;
+				}
+				//不符合提示信息,对用户进行提示,阻止表单提交
+				$("#password").css("border","1px solid red");
+				$("#passwordmsg").html("密码格式错误")
+				return false;
+			}
+			//邮箱格式判断方法
+			function checkemail() {
+				//email正则表达式
+				var emaiReg=/^\w+@\w+\.\w+$/;
+				//获取输入的email进行验证
+				var email = $("#email").val();
+				if(emaiReg.test(email)){
+					//email符合正则要求直接返回true
+					$("#email").css("border","");
+					//将错误提示去除
+					$("#emailmsg").html("")
+					return true;
+				}
+				//不符合提示信息,对用户进行提示,阻止表单提交
+				$("#email").css("border","1px solid red");
+				$("#emailmsgmsg").html("请输入正确的邮箱")
+				return false;
+			}
+			//电话格式判断方法
+			function checkphone() {
+
+				//telephone正则表达式
+				var telephoneReg=/\w/;
+				//获取输入telephone的进行验证
+				var telephone = $("#telephone").val();
+				if(telephoneReg.test(telephone)){
+					//telephone符合正则要求直接返回true
+					$("#telephone").css("border","");
+					//将错误提示去除
+					$("#phonemsg").html("")
+					return true;
+				}
+				//不符合提示信息,对用户进行提示,阻止表单提交
+				$("#telephone").css("border","1px solid red");
+				$("#phonemsgmsg").html("请输入正确的手机号")
+				return false;
+			}
+			//姓名判断方法
+			function checkname() {
+				//获取输入姓名
+				if($("#name").val()!=""){
+					//姓名不为空返回true
+					$("#name").css("border","");
+					//将错误提示去除
+					$("#namemsg").html("")
+					return true
+				}
+				//姓名为空返回false
+				$("#name").css("border","1px solid red");
+				$("namemsg").html("请输入正确姓名")
+				return false;
+			}
+			//生日判断方法
+			function checkbirthday() {
+				//获取输入姓名
+				if($("#birthday").val()!=""){
+					//生日不为空返回true
+					$("#password").css("border","");
+					//将错误提示去除
+					$("#birthdaymsg").html("")
+					return true
+				}
+				//生日为空返回false
+				$("#birthday").css("border","1px solid red");
+				$("#birthdaymsg").html("请输入正确的生日")
+				return false;
+			}
+			//验证码判断方法
+			function checkcode() {
+				//获取输入验证码
+				if($("#check").val()!=""){
+					//验证码不为空返回true
+					$("#check").css("border","");
+					//将错误提示去除
+					$("#codemsg").html("")
+					return true
+				}
+				//验证码为空返回false
+				$("#check").css("border","1px solid red");
+				$("#codemsg").html("验证码错误")
+				return false;
+			}
+			//给表单绑定一个提交事件,用于验证用户输入数据是否在正确
+			$("#registerForm").submit(function () {
+				//提交表单前调用所有的格式判断方法对数据判断错误不允许提交 采用异步提交的方式不让页面进行跳转
+				if(checkusername()&&checkpassword()&&checkemail()&&checkphone()&&checkusername()&&checkbirthday()&&checkcode()){
+					//当所有数据格式都正确，点击注册进行数据异步提交
+					$.get("/travel/user/register",$("#registerForm").serialize(),function (data) {
+							//对返回的json数据做判断
+						if(data.flag){
+							//flag为true注册成功,跳转至register_ok.html
+							location.href=("/travel/register_ok.html");
+						}else{
+							//注册失败
+							$("#msg").html(data.errorMsg)
+						}
+					})
+				}
+				//只进行数据异步提交,页面不进行跳转
+				return false ;
+				})
+			//给用户名输入框绑定一个失去焦点事件,判断用户名是否已经存在
+			$("#username").focusout(checkusername)
+			//验证码绑定一个失去焦点事件
+			$("#check").focusout(checkcode)
+			//password输入框绑定失去焦点事件
+			$("#password").focusout(checkpassword)
+			//name输入框绑定失去焦点事件
+			$("#name").focusout(checkname)
+			//birthday输入框绑定失去焦点事件
+			$("#birthday").focusout(checkbirthday)
+			//telephone输入框绑定失去焦点事件
+			$("#telephone").focusout(checkphone)
+			//email输入框绑定失去焦点事件
+			$("#email").focusout(checkemail)
+		})
+	</script>
+	<body>
+	<!--引入头部-->
+	<div id="header"></div>
+        <!-- 头部 end -->
+    	<div class="rg_layout">
+    		<div class="rg_form clearfix">
+    			<div class="rg_form_left">
+    				<p>新用户注册</p>
+    				<p>USER REGISTER</p>
+    			</div>
+    			<div class="rg_form_center">
+					
+					<!--注册表单-->
+    				<form id="registerForm" action="/travel/user/register" method="get">
+						<!--提交处理请求的标识符-->
+						<input type="hidden" name="action" value="register">
+    					<table style="margin-top: 25px;">
+    						<tr>
+    							<td class="td_left">
+    								<label for="username">用户名</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="username" name="username" placeholder="请输入用户名">
+									<span id="usernamemsg"></span>
+    							</td>
+
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="password">密码</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="password" name="password" placeholder="请输入密码">
+									<span id="passwordmsg"></span>
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="email">Email</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="email" name="email" placeholder="请输入Email">
+									<span id="emailmsg"></span>
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="name">姓名</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="name" name="name" placeholder="请输入真实姓名">
+									<span id="namemsg"></span>
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="telephone">手机号</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="text" id="telephone" name="telephone" placeholder="请输入您的手机号">
+									<span id="phonemsg"></span>
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="sex">性别</label>
+    							</td>
+    							<td class="td_right gender">
+    								<input type="radio" id="sex" name="sex" value="男" checked> 男
+    								<input type="radio" name="sex" value="女"> 女
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="birthday">出生日期</label>
+    							</td>
+    							<td class="td_right">
+    								<input type="date" id="birthday" name="birthday" placeholder="年/月/日">
+									<span id="birthdaymsg"></span>
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left">
+    								<label for="check">验证码</label>
+    							</td>
+    							<td class="td_right check">
+    								<input type="text" id="check" name="checkcode" class="check">
+    								<img src="/travel/checkcode" height="32px" alt="" onclick="changeCheckCode(this)">
+									<span id="codemsg"></span>
+									<script type="text/javascript">
+										//图片点击事件
+										function changeCheckCode(img) {
+											img.src="/travel/checkcode?"+new Date().getTime();
+                                        }
+									</script>
+    							</td>
+    						</tr>
+    						<tr>
+    							<td class="td_left"> 
+    							</td>
+    							<td class="td_right check"> 
+    								<input type="submit" class="submit" value="注册">
+									<span id="msg" style="color: red;"></span>
+    							</td>
+    						</tr>
+    					</table>
+    				</form>
+    			</div>
+    			<div class="rg_form_right">
+    				<p>
+    					已有账号？
+    					<a href="#">立即登录</a>
+    				</p>
+    			</div>
+    		</div>
+    	</div>
+        <!--引入尾部-->
+    	<div id="footer"></div>
+		<!--导入布局js，共享header和footer-->
+		<script type="text/javascript" src="js/include.js"></script>
+    	
+    </body>
+</html>
